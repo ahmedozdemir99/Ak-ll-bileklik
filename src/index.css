@@ -28,9 +28,8 @@ h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 800; }
 button.module, button.module:disabled, button.module:active, button.module:focus { background-color:var(--module-bg) !important; color:var(--module-fg) !important; border-color:var(--module-border) !important; opacity:1 !important; -webkit-tap-highlight-color:transparent; }
 
 
-/* Animate a separate visible overlay, not the locked button background. */
-button.module.primary { position:relative; isolation:isolate; }
-button.module.primary::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; border:5px solid #fdba74; opacity:0; }
-@keyframes describe-pulse-visible { 0%,100% { opacity:0; } 50% { opacity:1; } }
-@media (prefers-reduced-motion: no-preference) { button.module.primary::after { animation:describe-pulse-visible 2s ease-in-out 2; } button.module.primary[aria-busy="true"]::after { animation:describe-pulse-visible 2s ease-in-out 2; } }
-@media (prefers-reduced-motion: reduce) { button.module.primary::after { opacity:1; } }
+
+/* Slow, clearly visible color pulse; keep white text readable. */
+button.module.primary { --module-bg:#9a3412; animation:describe-color-pulse 2s ease-in-out infinite; }
+@keyframes describe-color-pulse { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) { button.module.primary { animation:none; outline:4px solid #ea580c; outline-offset:2px; } }
