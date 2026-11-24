@@ -2,7 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Camera, Upload, Volume2, VolumeX, ScanEye } from 'lucide-react';
 
 function plainNarration(text: string) {
-  return text.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/^\s*#{1,6}\s+/gm, '').replace(/^\s*[-•]\s+/gm, '').replace(/`/g, '').trim();
+  return text.normalize('NFC')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/(\d+(?:[.,]\d+)?)\s*%/g, 'yüzde $1')
+    .replace(/%(\d+)/g, 'yüzde $1')
+    .replace(/(\d)\s*°/g, '$1 derece')
+    .replace(/[*_\x60]/g, '')
+    .replace(/[^\p{L}\p{M}\p{N}\s.,!?;:]/gu, ' ')
+    .replace(/[.,!?;:]{2,}/g, '.')
+    .replace(/\s+/g, ' ').trim();
 }
 
 export function LiveCameraNarration() {
