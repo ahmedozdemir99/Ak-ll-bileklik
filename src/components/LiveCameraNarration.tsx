@@ -32,7 +32,7 @@ export function LiveCameraNarration() {
   async function openCamera() {
     setOpening(true); setError('');
     try {
-      const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
+      const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},aspectRatio:{ideal:16/9}},audio:false});
       if (!mounted.current) { s.getTracks().forEach(t=>t.stop()); return; }
       stream.current = s;
       if (video.current) { video.current.srcObject = s; await video.current.play(); }
@@ -87,13 +87,14 @@ export function LiveCameraNarration() {
   return <section aria-label="Çevre tarifi" className="flex flex-1 flex-col gap-4">
     <p role="status" aria-live="polite">{busy ? 'Çevre tarif ediliyor.' : opening ? 'Kamera açılıyor.' : active ? 'Kamera açık.' : image ? 'Fotoğraf hazır.' : 'Kamera kapalı.'}</p>
     <div className="module-grid">
-      <button className="module" disabled={opening||busy} onClick={active?stopCamera:openCamera}><Camera aria-hidden="true"/>{active?'Kamerayı kapat':'Kamerayı aç'}</button>
-      <button className="module" disabled={opening||busy} onClick={()=>fileInput.current?.click()}><Upload aria-hidden="true"/>Fotoğraf seç</button>
+      <button className="module camera-module" disabled={opening||busy} onClick={active?stopCamera:openCamera}><Camera aria-hidden="true"/>{active?'Kamerayı kapat':'Kamerayı aç'}</button>
+      <button className="module photo-module" disabled={opening||busy} onClick={()=>fileInput.current?.click()}><Upload aria-hidden="true"/>Fotoğraf seç</button>
       <button className="module primary" disabled={busy||opening||(!active&&!image)} onClick={analyze}><ScanEye aria-hidden="true"/>{busy?'Tarif hazırlanıyor':'Çevreyi tarif et'}</button>
-      <button className="module" disabled={!result&&!speaking} onClick={()=>speaking?stopSpeech():speak(result)}>{speaking?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{speaking?'Sesi durdur':'Tekrar dinle'}</button>
+      <button className="module audio-module" disabled={!result&&!speaking} onClick={()=>speaking?stopSpeech():speak(result)}>{speaking?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{speaking?'Sesi durdur':'Tekrar dinle'}</button>
     </div>
     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/>
-    <video ref={video} muted playsInline autoPlay aria-label="Kamera önizlemesi" className={active?'w-full max-h-48 object-contain':'absolute w-px h-px opacity-0 pointer-events-none'} />
+    <video ref={video} muted playsInline autoPlay aria-label="Kamera önizlemesi" className={active?'camera-preview':'absolute w-px h-px opacity-0 pointer-events-none'} />
+    {active&&<p className="text-sm">Daha geniş yatay görüntü için telefonu yan çevirin.</p>}
     {!active&&image&&<img src={image} alt="Seçilen fotoğraf" className="w-full max-h-48 object-contain"/>}
     {error&&<p role="alert" className="notice">{error}</p>}
     {result&&<section className="notice" aria-label="Son çevre tarifi"><h2 className="font-bold">Son tarif</h2><p>{result}</p></section>}
