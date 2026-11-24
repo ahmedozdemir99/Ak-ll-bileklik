@@ -1,0 +1,6 @@
+{
+  "name": "Gözüm Kulağımda - Görme Engelliler İçin Sesli Çevre Tarifi",
+  "description": "Akıllı telefon, kolye kılıfı ve bluetooth kulaklık ile görme engelliler için sesli çevre tarifi, nesne tanıma simülasyonu, açı ve mesafe test laboratuvarı ve yapay zeka asistanı.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
