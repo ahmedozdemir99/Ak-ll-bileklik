@@ -8,6 +8,7 @@ export async function onRequestPost({request, env}: {request: Request; env: Env}
   if (!match || match[2].length > 8500000) return reply({success:false,error:'Geçersiz veya çok büyük görüntü.'},400);
   const models = [...new Set([env.GEMINI_MODEL, 'gemini-3.1-flash-lite', 'gemini-2.5-flash'].filter(Boolean))];
   const deadline = Date.now()+35000;
+  const failures: string[] = [];
   for (const model of models) {
     const remaining = deadline-Date.now();
     if (remaining <= 0) break;
@@ -18,11 +19,12 @@ export async function onRequestPost({request, env}: {request: Request; env: Env}
         body:JSON.stringify({systemInstruction:{parts:[{text:'Görme engelli kullanıcıya Türkçe, kısa ve açık çevre tarifi ver. Görünen olası tehlikeleri öncelikle belirt. Kesin mesafe veya güvenli geçiş iddiasında bulunma. Belirsizlikleri belirt.'}]},contents:[{parts:[{inlineData:{mimeType:match[1],data:match[2]}},{text:'Bu görüntüyü tarif et.'}]}]})
       });
       if(response.status===401 || response.status===403) return reply({success:false,error:'Gemini API anahtarı veya erişim izni geçersiz.'},502);
-      if(!response.ok) continue;
+      if(!response.ok) { failures.push(model+': HTTP '+response.status); continue; }
       const data = await response.json() as {candidates?: {content?: {parts?: {text?:string;thought?:boolean}[]}}[]};
       const narration = data.candidates?.[0]?.content?.parts?.filter(p=>!p.thought).map(p=>p.text||'').join(' ').trim();
       if(narration) return reply({success:true,narration});
-    } catch { /* Try next configured model. */ }
+      failures.push(model+': boş yanıt');
+    } catch { failures.push(model+': bağlantı veya zaman aşımı'); }
   }
-  return reply({success:false,error:'Gemini yanıt vermedi. Model erişimini veya kotayı kontrol edin.'},502);
+  return reply({success:false,error:'Gemini hatası: '+(failures.join('; ') || 'Zaman aşımı')+'. 400: istek veya anahtar, 404: model, 429: kota, 503: servis yoğunluğu.'},502);
 }
