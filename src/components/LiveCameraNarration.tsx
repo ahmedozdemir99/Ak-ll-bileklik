@@ -69,10 +69,11 @@ export function LiveCameraNarration() {
     const timeout = window.setTimeout(()=>controller.abort(),45000);
     try {
       const res = await fetch('/api/describe-environment',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({imageBase64:data,angle:'15',distance:'1.5',customPrompt:'Görüntüyü Türkçe, kısa ve açık tarif et. Gönderilen açı ve mesafe test varsayımlarıdır, gerçek ölçüm değildir. Kesin mesafe veya güvenli geçiş iddiasında bulunma. Görünen olası tehlikeleri ve belirsizlikleri belirt.'})});
+      if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Cloudflare API işlevi bulunamadı veya yeni dağıtım henüz etkin değil. HTTP '+res.status);
       const body = await res.json();
-      if (!res.ok || !body.success || typeof body.narration !== 'string' || !body.narration.trim()) throw new Error();
+      if (!res.ok || !body.success || typeof body.narration !== 'string' || !body.narration.trim()) throw new Error(typeof body.error === 'string' ? body.error : 'API hatası: HTTP '+res.status);
       if (mounted.current) { setResult(body.narration); speak(body.narration); }
-    } catch { if(mounted.current) setError('Tarif alınamadı. İnternet bağlantısını kontrol edip tekrar deneyin.'); }
+    } catch (err) { if(mounted.current) setError(controller.signal.aborted ? 'API yanıt süresi doldu.' : err instanceof Error ? err.message : 'Bağlantı hatası.'); }
     finally { window.clearTimeout(timeout); request.current=null; if(mounted.current) setBusy(false); }
   }
   function upload(file?: File) {
