@@ -30,3 +30,8 @@ h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 800; }
 .module.primary { --module-bg:#9a3412; --module-fg:#fff; --module-border:#9a3412; }
 .module.audio-module { --module-bg:#166534; --module-fg:#fff; --module-border:#166534; }
 button.module, button.module:disabled, button.module:active, button.module:focus { background-color:var(--module-bg) !important; color:var(--module-fg) !important; border-color:var(--module-border) !important; opacity:1 !important; -webkit-tap-highlight-color:transparent; }
+
+/* Visible slow pulse without changing text contrast or disabled behavior. */
+@keyframes describe-glow { 0%,100% { box-shadow:0 0 0 0 rgba(234,88,12,0); } 50% { box-shadow:0 0 0 6px rgba(234,88,12,.65), inset 0 0 0 3px #fdba74; } }
+@media (prefers-reduced-motion: no-preference) { button.module.primary { animation:describe-glow 2s ease-in-out infinite; } }
+@media (prefers-reduced-motion: reduce) { button.module.primary { animation:none; } }
