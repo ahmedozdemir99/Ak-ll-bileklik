@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, Upload, Volume2, VolumeX, ScanEye } from 'lucide-react';
 
+function plainNarration(text: string) {
+  return text.replace(/\*+/g, '').replace(/_{2,}/g, '').replace(/^\s*#{1,6}\s+/gm, '').replace(/^\s*[-•]\s+/gm, '').replace(/`/g, '').trim();
+}
+
 export function LiveCameraNarration() {
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -44,7 +48,7 @@ export function LiveCameraNarration() {
   function speak(text: string) {
     if (!window.speechSynthesis) { setError('Bu tarayıcı seslendirmeyi desteklemiyor. Ekran okuyucuyu kullanabilirsiniz.'); return; }
     stopSpeech();
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(plainNarration(text));
     u.lang = 'tr-TR';
     u.onend = () => setSpeaking(false);
     u.onerror = () => setSpeaking(false);
@@ -72,7 +76,7 @@ export function LiveCameraNarration() {
       if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Cloudflare API işlevi bulunamadı veya yeni dağıtım henüz etkin değil. HTTP '+res.status);
       const body = await res.json();
       if (!res.ok || !body.success || typeof body.narration !== 'string' || !body.narration.trim()) throw new Error(typeof body.error === 'string' ? body.error : 'API hatası: HTTP '+res.status);
-      if (mounted.current) { setResult(body.narration); speak(body.narration); }
+      if (mounted.current) { const clean = plainNarration(body.narration); setResult(clean); speak(clean); }
     } catch (err) { if(mounted.current) setError(controller.signal.aborted ? 'API yanıt süresi doldu.' : err instanceof Error ? err.message : 'Bağlantı hatası.'); }
     finally { window.clearTimeout(timeout); request.current=null; if(mounted.current) setBusy(false); }
   }
@@ -89,7 +93,7 @@ export function LiveCameraNarration() {
     <div className="module-grid">
       <button className="module camera-module" disabled={opening||busy} onClick={active?stopCamera:openCamera}><Camera aria-hidden="true"/>{active?'Kamerayı kapat':'Kamerayı aç'}</button>
       <button className="module photo-module" disabled={opening||busy} onClick={()=>fileInput.current?.click()}><Upload aria-hidden="true"/>Fotoğraf seç</button>
-      <button className="module primary" disabled={busy||opening||(!active&&!image)} onClick={analyze}><ScanEye aria-hidden="true"/>{busy?'Tarif hazırlanıyor':'Çevreyi tarif et'}</button>
+      <button className="module primary" aria-busy={busy} disabled={busy||opening||(!active&&!image)} onClick={analyze}><ScanEye aria-hidden="true"/>{busy?'Tarif hazırlanıyor':'Çevreyi tarif et'}</button>
       <button className="module audio-module" disabled={!result&&!speaking} onClick={()=>speaking?stopSpeech():speak(result)}>{speaking?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{speaking?'Sesi durdur':'Tekrar dinle'}</button>
     </div>
     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/>
