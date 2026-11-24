@@ -1,1 +1,35 @@
 @import "tailwindcss";
+:root { color-scheme: light; font-family: system-ui, sans-serif; background: white; color: #111827; }
+body { margin: 0; background: white; color: #111827; }
+.app-shell { max-width: 72rem; margin: auto; padding: 1rem; min-height: 100dvh; display: flex; flex-direction: column; gap: 1rem; }
+.app-shell main { flex: 1; display: flex; flex-direction: column; }
+h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 800; }
+.module-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; flex: 1; }
+.module { min-height: 88px; width: 100%; padding: 1rem; border: 2px solid #111827; border-radius: 16px; background: white; color: #111827; font-size: 1.35rem; font-weight: 750; display: flex; align-items: center; gap: 1rem; text-align: left; overflow-wrap: anywhere; }
+.module.primary { background: #111827; color: white; }
+.module:disabled { opacity: .55; cursor: not-allowed; }
+.module svg { flex-shrink: 0; width: 32px; height: 32px; }
+:focus-visible { outline: 4px solid #1d4ed8; outline-offset: 4px; }
+.notice { padding: 1rem; border: 2px solid #111827; border-radius: 12px; font-size: 1.05rem; }
+@media (min-width: 700px) { .module-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+.module.camera-module { background:#facc15; color:#111827; border-color:#854d0e; }
+.module.photo-module { background:#6d28d9; color:white; border-color:#6d28d9; }
+.module.primary { background:#9a3412; color:white; border-color:#9a3412; }
+.module.audio-module { background:#166534; color:white; border-color:#166534; }
+.module:disabled { opacity:1; cursor:not-allowed; border-style:dashed; }
+.camera-preview { display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#111827; border-radius:12px; }
+
+/* Preserve identity in every interaction state. */
+.module.camera-module { --module-bg:#facc15; --module-fg:#111827; --module-border:#854d0e; }
+.module.photo-module { --module-bg:#6d28d9; --module-fg:#fff; --module-border:#6d28d9; }
+.module.primary { --module-bg:#9a3412; --module-fg:#fff; --module-border:#9a3412; }
+.module.audio-module { --module-bg:#166534; --module-fg:#fff; --module-border:#166534; }
+button.module, button.module:disabled, button.module:active, button.module:focus { background-color:var(--module-bg) !important; color:var(--module-fg) !important; border-color:var(--module-border) !important; opacity:1 !important; -webkit-tap-highlight-color:transparent; }
+
+
+
+/* Slow, clearly visible color pulse; keep white text readable. */
+button.module.primary { --module-bg:#9a3412; animation:describe-color-pulse 2s ease-in-out infinite; }
+@keyframes describe-color-pulse { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.35); } }
+@media (prefers-reduced-motion: reduce) { button.module.primary { animation:none; outline:4px solid #ea580c; outline-offset:2px; } }

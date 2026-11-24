@@ -1,36 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e1b4b" />
-      <stop offset="50%" stop-color="#312e81" />
-      <stop offset="100%" stop-color="#4338ca" />
-    </linearGradient>
-    <linearGradient id="glow" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#3730a3" stop-opacity="0.3" />
-    </linearGradient>
-  </defs>
-  <!-- Background with rounded squircles -->
-  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
-  
-  <!-- Outer Aura rings -->
-  <circle cx="256" cy="256" r="180" fill="none" stroke="#6366f1" stroke-width="4" stroke-opacity="0.4" stroke-dasharray="12 8" />
-  <circle cx="256" cy="256" r="130" fill="none" stroke="#818cf8" stroke-width="6" stroke-opacity="0.6" />
-
-  <!-- Necklace Pendant & Camera Lens Motif -->
-  <path d="M 180 140 Q 256 100 332 140" fill="none" stroke="#c7d2fe" stroke-width="8" stroke-linecap="round" />
-  
-  <rect x="176" y="160" width="160" height="200" rx="32" fill="#0f172a" stroke="#818cf8" stroke-width="8" />
-  
-  <!-- Camera Lens -->
-  <circle cx="256" cy="240" r="48" fill="url(#glow)" stroke="#a5b4fc" stroke-width="8" />
-  <circle cx="256" cy="240" r="20" fill="#e0e7ff" />
-  <circle cx="244" cy="228" r="6" fill="#ffffff" />
-
-  <!-- Sound Waves / Bluetooth Earpiece Symbol -->
-  <path d="M 220 320 Q 256 340 292 320" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" />
-  <path d="M 190 345 Q 256 375 322 345" fill="none" stroke="#0ea5e9" stroke-width="6" stroke-linecap="round" stroke-dasharray="8 6" />
-
-  <!-- Accessibility Eye Icon overlay -->
-  <circle cx="256" cy="240" r="76" fill="none" stroke="#38bdf8" stroke-width="4" stroke-dasharray="8 8" opacity="0.6" />
+<rect width="512" height="512" fill="#ffffff"/>
+<circle cx="256" cy="256" r="164" fill="#111827"/>
+<path d="M126 246 Q206 151 286 246 Q206 341 126 246Z" fill="none" stroke="#ffffff" stroke-width="18" stroke-linejoin="round"/>
+<circle cx="206" cy="246" r="29" fill="#ffffff"/>
+<path d="M313 215 Q342 246 313 277 M341 188 Q396 246 341 304" fill="none" stroke="#ffffff" stroke-width="17" stroke-linecap="round"/>
 </svg>
