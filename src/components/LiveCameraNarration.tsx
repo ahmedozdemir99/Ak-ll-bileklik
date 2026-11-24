@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Camera, Upload, Volume2, VolumeX, ScanEye } from 'lucide-react';
 
 function plainNarration(text: string) {
@@ -16,6 +16,14 @@ function plainNarration(text: string) {
 
 export function LiveCameraNarration() {
   const video = useRef<HTMLVideoElement>(null);
+  const [pulse, setPulse] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const timer = window.setInterval(() => {
+      setPulse(previous => media.matches ? false : !previous);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   const stream = useRef<MediaStream | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const request = useRef<AbortController | null>(null);
@@ -102,7 +110,7 @@ export function LiveCameraNarration() {
     <div className="module-grid">
       <button className="module camera-module" disabled={opening||busy} onClick={active?stopCamera:openCamera}><Camera aria-hidden="true"/>{active?'Kamerayı kapat':'Kamerayı aç'}</button>
       <button className="module photo-module" disabled={opening||busy} onClick={()=>fileInput.current?.click()}><Upload aria-hidden="true"/>Fotoğraf seç</button>
-      <button className="module primary" aria-busy={busy} disabled={busy||opening||(!active&&!image)} onClick={analyze}><ScanEye aria-hidden="true"/>{busy?'Tarif hazırlanıyor':'Çevreyi tarif et'}</button>
+      <button className="module primary" style={{ '--module-bg': pulse ? '#b45309' : '#9a3412', boxShadow: pulse ? 'inset 0 0 0 5px #fdba74' : 'none', animation: 'none' } as CSSProperties} aria-busy={busy} disabled={busy||opening||(!active&&!image)} onClick={analyze}><ScanEye aria-hidden="true"/>{busy?'Tarif hazırlanıyor':'Çevreyi tarif et'}</button>
       <button className="module audio-module" disabled={!result&&!speaking} onClick={()=>speaking?stopSpeech():speak(result)}>{speaking?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{speaking?'Sesi durdur':'Tekrar dinle'}</button>
     </div>
     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/>
