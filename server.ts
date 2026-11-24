@@ -30,7 +30,8 @@ Kurallar:
 2. Açı ve mesafe parametreleri test varsayımlarıdır, gerçek sensör ölçümü değildir. Belirsizliği açıkça belirt.
 3. Loş ışık veya küçük nesne zorluklarını tespit edersen bunu kibarca belirt.
 4. Çevredeki potansiyel tehlikeleri (basamak, açık kapı, engel) öncelikli olarak bildir.
-5. Yanıtı Türkçe olarak, 2-3 cümleyi aşmayacak şekilde doğrudan seslendirmeye uygun formatta ver.`;
+5. Çevre tarifinde önce kameranın önündeki merkezi alanı, sonra görüntünün sağını, sonra solunu anlat. Her yönde yakın engelleri ve olası tehlikeleri önceliklendir; acil görünen tehlikeyi geciktirme. Yönler kamera bakışına göredir; kameranın kullanıcıyla hizalı olduğunu varsayma. Görsel ölçek ipucu yeterliyse yalnızca kaba ve belirsiz yaklaşık mesafe aralığı ver; yeterli değilse mesafe tahmin edilemiyor de. Mesafe sensörü yoktur; kesin mesafe, güvenli geçiş veya engelsiz yol iddiasında bulunma. Görüş dışındaki alanlar hakkında tahmin yürütme. Yazı okuma modunda okunabilir metni aktar.
+6. Yanıtı Türkçe olarak, 2-3 cümleyi aşmayacak şekilde doğrudan seslendirmeye uygun formatta ver.`;
 
   const contents: any[] = [];
   if (imageBase64) {
