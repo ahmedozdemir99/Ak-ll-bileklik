@@ -17,9 +17,9 @@ h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 800; }
 .module.photo-module { background:#6d28d9; color:white; border-color:#6d28d9; }
 .module.primary { background:#9a3412; color:white; border-color:#9a3412; }
 .module.audio-module { background:#166534; color:white; border-color:#166534; }
-.module:disabled { background:#e5e7eb; color:#4b5563; border-color:#6b7280; opacity:1; }
+.module:disabled { opacity:1; cursor:not-allowed; border-style:dashed; }
 .camera-preview { display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#111827; border-radius:12px; }
 
 /* Gentle attention pulse; no rapid flashing or text contrast changes. */
 @keyframes narration-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(154,52,18,0); } 50% { box-shadow: 0 0 0 5px rgba(154,52,18,.38); } }
-@media (prefers-reduced-motion: no-preference) { .module.primary:not(:disabled) { animation: narration-pulse 2s ease-in-out infinite; } }
+@media (prefers-reduced-motion: no-preference) { .module.primary:not(:disabled), .module.primary[aria-busy='true'] { animation: narration-pulse 2s ease-in-out infinite; } }
