@@ -77,9 +77,14 @@ export function LiveCameraNarration() {
   async function openCamera() {
     setOpening(true); setError('');
     try {
-      const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},aspectRatio:{ideal:16/9}},audio:false});
+      const s = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},aspectRatio:{ideal:16/9},resizeMode:{ideal:'none'} as ConstrainDOMString},audio:false});
       if (!mounted.current) { s.getTracks().forEach(t=>t.stop()); return; }
       stream.current = s;
+      const track = s.getVideoTracks()[0];
+      const caps = track?.getCapabilities?.() as (MediaTrackCapabilities & {zoom?: {min:number;max:number}}) | undefined;
+      if (caps?.zoom && Number.isFinite(caps.zoom.min)) {
+        try { await track.applyConstraints({advanced:[{zoom:caps.zoom.min} as MediaTrackConstraintSet]}); } catch { /* Device may not support zoom control. */ }
+      }
       if (video.current) { video.current.srcObject = s; await video.current.play(); }
       setImage(''); setResult(''); setActive(true);
     } catch { stopCamera(); setError('Kamera açılamadı. Kamera iznini ve güvenli bağlantıyı kontrol edin.'); }
@@ -144,7 +149,7 @@ export function LiveCameraNarration() {
     </div>
     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/>
     <video ref={video} muted playsInline autoPlay aria-label="Kamera önizlemesi" className={active?'camera-preview':'absolute w-px h-px opacity-0 pointer-events-none'} />
-    {active&&<p className="text-sm">Daha geniş yatay görüntü için telefonu yan çevirin.</p>}
+    {active&&<p className="text-sm">Geniş görüş için telefonu yatay tutun.</p>}
     {!active&&image&&<img src={image} alt="Seçilen fotoğraf" className="w-full max-h-48 object-contain"/>}
     {error&&<p role="alert" className="notice">{error}</p>}
     {result&&<section className="notice" aria-label="Son çevre tarifi"><h2 className="font-bold">Son tarif</h2><p>{result}</p></section>}
