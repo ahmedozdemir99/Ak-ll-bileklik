@@ -2,7 +2,7 @@ type Env = { GEMINI_API_KEY?: string; GEMINI_MODEL?: string };
 const reply = (body: object, status = 200) => Response.json(body, {status, headers: {'Cache-Control':'no-store'}});
 export async function onRequestPost({request, env}: {request: Request; env: Env}) {
   if (!env.GEMINI_API_KEY) return reply({success:false,error:'Sunucuda Gemini API anahtarı tanımlanmamış.'},503);
-  let body: {imageBase64?: string};
+  let body: {imageBase64?: string; mode?: string};
   try { body = await request.json(); } catch { return reply({success:false,error:'Geçersiz istek.'},400); }
   const match = typeof body?.imageBase64 === 'string' && body.imageBase64.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
   if (!match || match[2].length > 8250000) return reply({success:false,error:'Geçersiz veya çok büyük görüntü.'},400);
@@ -25,7 +25,7 @@ export async function onRequestPost({request, env}: {request: Request; env: Env}
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model!)+':generateContent',{
         method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':env.GEMINI_API_KEY},
         signal:AbortSignal.timeout(Math.min(remaining,6000)),
-        body:JSON.stringify({systemInstruction:{parts:[{text:'Görme engelli kullanıcıya Türkçe, kısa ve açık çevre tarifi ver. Görünen olası tehlikeleri öncelikle belirt. Kesin mesafe veya güvenli geçiş iddiasında bulunma. Belirsizlikleri belirt.'}]},contents:[{parts:[{inlineData:{mimeType:match[1],data:match[2]}},{text:'Bu görüntüyü tarif et.'}]}]})
+        body:JSON.stringify({systemInstruction:{parts:[{text:'Görme engelli kullanıcıya Türkçe, kısa ve açık çevre tarifi ver. Görünen olası tehlikeleri öncelikle belirt. Kesin mesafe veya güvenli geçiş iddiasında bulunma. Belirsizlikleri belirt.'}]},contents:[{parts:[{inlineData:{mimeType:match[1],data:match[2]}},{text:body.mode === 'read' ? 'Görüntüde okunabilen yazıları olduğu gibi aktar. Okunamayan yerleri belirt.' : body.mode === 'detail' ? 'Görüntüyü ayrıntılı tarif et; olası tehlikeleri önce belirt.' : 'En fazla üç kısa cümleyle görüntüyü tarif et; olası tehlikeleri önce belirt.'}]}]})
       });
       if(response.status===401 || response.status===403) return reply({success:false,error:'Gemini API anahtarı veya erişim izni geçersiz.'},502);
       if(!response.ok) { failures.push(model+': HTTP '+response.status); continue; }
