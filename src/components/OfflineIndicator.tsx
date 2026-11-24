@@ -1,16 +1,5 @@
-import React from 'react';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
-import { WifiOff } from 'lucide-react';
-
-export const OfflineIndicator: React.FC = () => {
-  const isOnline = useOnlineStatus();
-
-  if (isOnline) return null;
-
-  return (
-    <div className="fixed bottom-4 left-4 z-50 flex items-center gap-2.5 rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white shadow-2xl animate-pulse">
-      <WifiOff className="w-4 h-4" />
-      <span>Çevrimdışı Mod — Önbelleğe alınan veriler kullanılıyor.</span>
-    </div>
-  );
+export const OfflineIndicator = () => {
+  const online = useOnlineStatus();
+  return <div role="status" aria-live="polite">{!online && <p className="notice">İnternet bağlantısı yok. Yeni çevre tarifi alınamaz.</p>}</div>;
 };
