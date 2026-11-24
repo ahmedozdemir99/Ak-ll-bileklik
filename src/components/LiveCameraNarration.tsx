@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, Upload, Volume2, VolumeX, ScanEye } from 'lucide-react';
 
+function feedback(pattern: number | number[]) {
+  try { navigator.vibrate?.(pattern); } catch { /* Unsupported hardware must not interrupt narration. */ }
+}
+
 function plainNarration(text: string) {
   return text.normalize('NFC')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
@@ -82,7 +86,7 @@ export function LiveCameraNarration() {
     stream.current?.getTracks().forEach(t => t.stop());
     stream.current = null;
     if (video.current) video.current.srcObject = null;
-    setActive(false); setAutomatic(false);
+    setActive(false); setAutomatic(false); feedback(100);
   }
   async function openCamera() {
     setOpening(true); setError('');
@@ -96,8 +100,8 @@ export function LiveCameraNarration() {
         try { await track.applyConstraints({advanced:[{zoom:caps.zoom.min} as MediaTrackConstraintSet]}); } catch { /* Device may not support zoom control. */ }
       }
       if (video.current) { video.current.srcObject = s; await video.current.play(); }
-      setImage(''); setResult(''); setActive(true); void landscape();
-    } catch { stopCamera(); setError('Kamera açılamadı. Kamera iznini ve güvenli bağlantıyı kontrol edin.'); }
+      setImage(''); setResult(''); setActive(true); feedback([50,60,50]); void landscape();
+    } catch { stopCamera(); feedback([180,100,180,100,180]); setError('Kamera açılamadı. Kamera iznini ve güvenli bağlantıyı kontrol edin.'); }
     finally { if(mounted.current) setOpening(false); }
   }
   function stopSpeech() { window.speechSynthesis?.cancel(); setSpeaking(false); }
@@ -125,15 +129,15 @@ export function LiveCameraNarration() {
       ctx.drawImage(v,0,0,c.width,c.height); data = c.toDataURL('image/jpeg',mode === 'read' ? .85 : .72);
     }
     if (!data) { setError('Önce kamerayı açın veya fotoğraf seçin.'); return; }
-    const controller = new AbortController(); request.current = controller; setBusy(true); navigator.vibrate?.(60);
+    const controller = new AbortController(); request.current = controller; setBusy(true); feedback(60);
     const timeout = window.setTimeout(()=>controller.abort(),18000);
     try {
       const res = await fetch('/api/describe-environment',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({imageBase64:data,mode,customPrompt:'Görüntüyü Türkçe, kısa ve açık tarif et. Ana anlatım sırası yakından uzağa olsun: önce hemen yakındaki ve ayak hizasındaki nesneler, sonra orta mesafedeki, en son uzaktaki nesneler. Her mesafe grubunda önce ön, sonra sağ, sonra sol yönü belirt. Acil görünen tehlikeleri her zaman ilk sırada bildir. Mesafe belirsizse uydurma; yönleri kamera bakışına göre belirt.  Her yönde yakın engelleri ve olası tehlikeleri önceliklendir; acil görünen tehlikeyi geciktirme. Yönler kamera bakışına göredir; kameranın kullanıcıyla hizalı olduğunu varsayma. Görsel ölçek ipucu yeterliyse yalnızca kaba ve belirsiz yaklaşık mesafe aralığı ver; yeterli değilse mesafe tahmin edilemiyor de. Mesafe sensörü yoktur; kesin mesafe, güvenli geçiş veya engelsiz yol iddiasında bulunma. Görüş dışındaki alanlar hakkında tahmin yürütme. Yazı okuma modunda okunabilir metni aktar.'})});
       if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Cloudflare API işlevi bulunamadı veya yeni dağıtım henüz etkin değil. HTTP '+res.status);
       const body = await res.json();
       if (!res.ok || !body.success || typeof body.narration !== 'string' || !body.narration.trim()) throw new Error(typeof body.error === 'string' ? body.error : 'API hatası: HTTP '+res.status);
-      if (mounted.current) { const clean = plainNarration(body.narration); setResult(clean); navigator.vibrate?.([60,80,60]); speak(clean); }
-    } catch (err) { if(mounted.current) { console.warn(err); const message = 'Çevre şu anda tarif edilemiyor. Lütfen tekrar deneyin.'; setError(message); speak(message); setAutomatic(false); } }
+      if (mounted.current) { const clean = plainNarration(body.narration); setResult(clean); feedback([60,80,60]); speak(clean); }
+    } catch (err) { if(mounted.current) { console.warn(err); const message = 'Çevre şu anda tarif edilemiyor. Lütfen tekrar deneyin.'; setError(message); feedback([180,100,180,100,180]); speak(message); setAutomatic(false); } }
     finally { window.clearTimeout(timeout); request.current=null; if(mounted.current) setBusy(false); }
   }
   function upload(file?: File) {
@@ -153,8 +157,8 @@ export function LiveCameraNarration() {
       <button className="module audio-module" disabled={!result&&!speaking} onClick={()=>speaking?stopSpeech():speak(result)}>{speaking?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{speaking?'Sesi durdur':'Tekrar dinle'}</button>
     </div>
     <div className="grid gap-3">
-      <button className="module" aria-pressed={automatic} disabled={!active} onClick={()=>setAutomatic(v=>!v)}>{automatic?'Otomatik tarifi durdur':'Otomatik tarif başlat'}</button>
-      <button className="module" aria-pressed={voice} onClick={voiceCommand}>{voice?'Dinlemeyi durdur':'Sesli komut'}</button>
+      <button className="module" aria-pressed={automatic} disabled={!active} onClick={()=>{feedback(60);setAutomatic(v=>!v);}}>{automatic?'Otomatik tarifi durdur':'Otomatik tarif başlat'}</button>
+      <button className="module" aria-pressed={voice} onClick={()=>{feedback(60);voiceCommand();}}>{voice?'Dinlemeyi durdur':'Sesli komut'}</button>
       <label className="font-bold">Tarif türü<select className="module" value={mode} onChange={e=>setMode(e.target.value)}><option value="short">Kısa tarif</option><option value="detail">Ayrıntılı tarif</option><option value="read">Yazı oku</option></select></label>
     </div>
     <input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={e=>{upload(e.target.files?.[0]);e.target.value='';}}/>
