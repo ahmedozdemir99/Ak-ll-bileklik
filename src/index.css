@@ -12,3 +12,10 @@ h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 800; }
 :focus-visible { outline: 4px solid #1d4ed8; outline-offset: 4px; }
 .notice { padding: 1rem; border: 2px solid #111827; border-radius: 12px; font-size: 1.05rem; }
 @media (min-width: 700px) { .module-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+.module.camera-module { background:#1d4ed8; color:white; border-color:#1d4ed8; }
+.module.photo-module { background:#6d28d9; color:white; border-color:#6d28d9; }
+.module.primary { background:#166534; color:white; border-color:#166534; }
+.module.audio-module { background:#9a3412; color:white; border-color:#9a3412; }
+.module:disabled { background:#e5e7eb; color:#4b5563; border-color:#6b7280; opacity:1; }
+.camera-preview { display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#111827; border-radius:12px; }
