@@ -63,12 +63,22 @@ export function LiveCameraNarration() {
     mounted.current = true;
     return () => {
       mounted.current = false;
+      unlockOrientation();
       stream.current?.getTracks().forEach(t => t.stop());
       request.current?.abort();
       window.speechSynthesis?.cancel();
     };
   }, []);
+  function unlockOrientation() {
+    try { window.screen.orientation?.unlock?.(); } catch { /* Unsupported device. */ }
+  }
+  async function landscape() {
+    const orientation = window.screen.orientation as (ScreenOrientation & {lock?: (value: string) => Promise<void>}) | undefined;
+    try { await orientation?.lock?.('landscape'); } catch { /* Keep camera usable on unsupported browsers. */ }
+    if (!stream.current && !mounted.current) unlockOrientation();
+  }
   function stopCamera() {
+    unlockOrientation();
     stream.current?.getTracks().forEach(t => t.stop());
     stream.current = null;
     if (video.current) video.current.srcObject = null;
@@ -86,7 +96,7 @@ export function LiveCameraNarration() {
         try { await track.applyConstraints({advanced:[{zoom:caps.zoom.min} as MediaTrackConstraintSet]}); } catch { /* Device may not support zoom control. */ }
       }
       if (video.current) { video.current.srcObject = s; await video.current.play(); }
-      setImage(''); setResult(''); setActive(true);
+      setImage(''); setResult(''); setActive(true); void landscape();
     } catch { stopCamera(); setError('Kamera açılamadı. Kamera iznini ve güvenli bağlantıyı kontrol edin.'); }
     finally { if(mounted.current) setOpening(false); }
   }
