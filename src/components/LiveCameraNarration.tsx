@@ -111,6 +111,6 @@ export function LiveCameraNarration() {
     {!active&&image&&<img src={image} alt="Seçilen fotoğraf" className="w-full max-h-48 object-contain"/>}
     {error&&<p role="alert" className="notice">{error}</p>}
     {result&&<section className="notice" aria-label="Son çevre tarifi"><h2 className="font-bold">Son tarif</h2><p>{result}</p></section>}
-    <p className="text-sm">Yapay zekâ tarifi hatalı olabilir. Baston veya rehber köpek yerine kullanmayın. Ses, cihazınızın seçili ses çıkışından gelir.</p>
+    <details className="text-sm"><summary>Güvenli kullanım</summary><p>Yapay zekâ tarifi hatalı olabilir. Baston veya rehber köpek yerine kullanmayın. Ses, cihazınızın seçili ses çıkışından gelir.</p></details>
   </section>;
 }
