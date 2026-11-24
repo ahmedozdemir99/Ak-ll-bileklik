@@ -19,6 +19,29 @@ function plainNarration(text: string) {
 }
 
 export function LiveCameraNarration() {
+  const sensorReadings = useRef<{frontCm?:number;rightCm?:number;leftCm?:number;capturedAt:number}|null>(null);
+  useEffect(() => {
+    // Hardware bridge must dispatch this event from a trusted local sensor integration.
+    const receive = (event: Event) => {
+      const d = (event as CustomEvent).detail;
+      if (!d || typeof d.capturedAt !== 'number' || Math.abs(Date.now()-d.capturedAt)>2000) return;
+      const clean: {frontCm?:number;rightCm?:number;leftCm?:number;capturedAt:number} = {capturedAt:d.capturedAt};
+      for (const key of ['frontCm','rightCm','leftCm'] as const) {
+        if (typeof d[key]==='number' && Number.isFinite(d[key]) && d[key]>0 && d[key]<=1000) clean[key]=d[key];
+      }
+      sensorReadings.current=clean;
+    };
+    let last=0;
+    const timer=window.setInterval(()=>{
+      const d=sensorReadings.current;
+      if (!d || Math.abs(Date.now()-d.capturedAt)>2000 || document.hidden) return;
+      const nearest=Math.min(d.frontCm??Infinity,d.rightCm??Infinity,d.leftCm??Infinity);
+      const interval=nearest<=30?500:nearest<=50?1000:nearest<=100?2000:Infinity;
+      if(Date.now()-last>=interval){feedback(nearest<=30?180:nearest<=50?100:60);last=Date.now();}
+    },250);
+    window.addEventListener('wearable-range',receive);
+    return ()=>{window.removeEventListener('wearable-range',receive);window.clearInterval(timer);};
+  }, []);
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -132,7 +155,7 @@ export function LiveCameraNarration() {
     const controller = new AbortController(); request.current = controller; setBusy(true); feedback(60);
     const timeout = window.setTimeout(()=>controller.abort(),18000);
     try {
-      const res = await fetch('/api/describe-environment',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({imageBase64:data,mode,customPrompt:'Görüntüyü Türkçe, kısa ve açık tarif et. Ana anlatım sırası yakından uzağa olsun: önce hemen yakındaki ve ayak hizasındaki nesneler, sonra orta mesafedeki, en son uzaktaki nesneler. Her mesafe grubunda önce ön, sonra sağ, sonra sol yönü belirt. Acil görünen tehlikeleri her zaman ilk sırada bildir. Mesafe belirsizse uydurma; yönleri kamera bakışına göre belirt.  Her yönde yakın engelleri ve olası tehlikeleri önceliklendir; acil görünen tehlikeyi geciktirme. Yönler kamera bakışına göredir; kameranın kullanıcıyla hizalı olduğunu varsayma. Görsel ölçek ipucu yeterliyse yalnızca kaba ve belirsiz yaklaşık mesafe aralığı ver; yeterli değilse mesafe tahmin edilemiyor de. Mesafe sensörü yoktur; kesin mesafe, güvenli geçiş veya engelsiz yol iddiasında bulunma. Görüş dışındaki alanlar hakkında tahmin yürütme. Yazı okuma modunda okunabilir metni aktar.'})});
+      const res = await fetch('/api/describe-environment',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({imageBase64:data,mode,sensors:sensorReadings.current,customPrompt:'Görüntüyü Türkçe, kısa ve açık tarif et. Ana anlatım sırası yakından uzağa olsun: önce hemen yakındaki ve ayak hizasındaki nesneler, sonra orta mesafedeki, en son uzaktaki nesneler. Her mesafe grubunda önce ön, sonra sağ, sonra sol yönü belirt. Acil görünen tehlikeleri her zaman ilk sırada bildir. Yeterli görsel ipucu varsa yaklaşık sayısal mesafeyi santimetre veya metre olarak seslendir, örneğin sağında yaklaşık 50 santimetre. Ölçüm ile görsel tahmini açıkça ayır. Mesafe belirsizse uydurma; yönleri kamera bakışına göre belirt.  Her yönde yakın engelleri ve olası tehlikeleri önceliklendir; acil görünen tehlikeyi geciktirme. Yönler kamera bakışına göredir; kameranın kullanıcıyla hizalı olduğunu varsayma. Görsel ölçek ipucu yeterliyse yalnızca kaba ve belirsiz yaklaşık mesafe aralığı ver; yeterli değilse mesafe tahmin edilemiyor de. Mesafe sensörü yoktur; kesin mesafe, güvenli geçiş veya engelsiz yol iddiasında bulunma. Görüş dışındaki alanlar hakkında tahmin yürütme. Yazı okuma modunda okunabilir metni aktar.'})});
       if (!res.headers.get('content-type')?.includes('application/json')) throw new Error('Cloudflare API işlevi bulunamadı veya yeni dağıtım henüz etkin değil. HTTP '+res.status);
       const body = await res.json();
       if (!res.ok || !body.success || typeof body.narration !== 'string' || !body.narration.trim()) throw new Error(typeof body.error === 'string' ? body.error : 'API hatası: HTTP '+res.status);
